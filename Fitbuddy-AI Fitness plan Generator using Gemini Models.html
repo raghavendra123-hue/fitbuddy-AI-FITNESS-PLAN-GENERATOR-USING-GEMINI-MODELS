@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FitBuddy | AI Wellness Planner</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',Arial,sans-serif; }
+  body { background:#0b0f14; color:#e8edf3; min-height:100vh; }
+  nav { display:flex; justify-content:space-between; align-items:center; padding:18px 48px; border-bottom:1px solid #1c2530; }
+  .logo { font-size:22px; font-weight:800; color:#a8ff4d; font-style:italic; }
+  nav a { color:#9fb0c3; text-decoration:none; margin-left:20px; font-size:14px; }
+  .hero { text-align:center; padding:60px 20px 30px; }
+  .tag { color:#a8ff4d; letter-spacing:4px; font-size:12px; font-weight:700; }
+  .hero h1 { font-size:64px; font-weight:900; margin:12px 0; line-height:1.05; }
+  .hero h1 span { color:#a8ff4d; }
+  .hero p { color:#9fb0c3; font-size:17px; }
+  .card { max-width:860px; margin:30px auto; background:#10161d; border:1px solid #1c2530; border-radius:16px; padding:32px; }
+  .card h2 { font-size:24px; margin-bottom:6px; }
+  .card .sub { color:#8b99ab; font-size:14px; margin-bottom:22px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  label { display:block; font-size:13px; color:#c7d2de; margin-bottom:6px; }
+  input, select { width:100%; padding:12px 14px; background:#0b0f14; border:1px solid #2a3644; border-radius:10px; color:#e8edf3; font-size:15px; }
+  input:focus, select:focus { outline:none; border-color:#a8ff4d; }
+  .btn { display:inline-block; margin-top:24px; background:#a8ff4d; color:#0b0f14; border:none; padding:14px 26px; border-radius:12px; font-size:16px; font-weight:800; cursor:pointer; }
+  .btn:hover { background:#c2ff70; }
+  .foot { color:#5f6c7b; font-size:12px; margin-top:18px; }
+  .days { margin-top:10px; }
+  .day { background:#0b0f14; border:1px solid #22303e; border-radius:12px; padding:16px 20px; margin-bottom:12px; animation:fadein .4s ease both; }
+  .day h3 { color:#a8ff4d; margin-bottom:8px; font-size:16px; }
+  .day ul { list-style:none; }
+  .day li { color:#c7d2de; font-size:14px; padding:4px 0 4px 18px; position:relative; line-height:1.6; }
+  .day li::before { content:"\2022"; color:#a8ff4d; position:absolute; left:0; }
+  .meta { color:#8b99ab; font-size:13px; margin-bottom:14px; }
+  .badge { display:inline-block; background:#1a2a12; color:#a8ff4d; border:1px solid #2f4a1d; font-size:12px; padding:4px 12px; border-radius:20px; margin-bottom:16px; }
+  .tip { background:#0f1a10; border:1px solid #2f4a1d; color:#b8d99a; font-size:13px; padding:12px 16px; border-radius:10px; margin-bottom:16px; }
+  @keyframes fadein { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  @media(max-width:640px){ .grid{grid-template-columns:1fr;} .hero h1{font-size:42px;} nav{padding:14px 20px;} }
+</style>
+</head>
+<body>
+<nav>
+  <span class="logo">FitBuddy</span>
+  <span><a href="#" onclick="showHome();return false;">Home</a><a href="#">Admin</a></span>
+</nav>
+
+<div id="home">
+  <div class="hero">
+    <div class="tag">AI-POWERED WELLNESS</div>
+    <h1>Your week.<br><span>Smarter.</span></h1>
+    <p>Create a structured 7-day movement and recovery plan, then refine it with feedback.</p>
+  </div>
+  <div class="card">
+    <h2>Create your plan</h2>
+    <p class="sub">Enter your details. Use goals such as general wellness, strength, mobility, or fitness.</p>
+    <form id="planForm">
+      <div class="grid">
+        <div><label>Name</label><input id="name" placeholder="Your name" required></div>
+        <div><label>User ID</label><input id="uid" placeholder="e.g. fit001" required></div>
+        <div><label>Age</label><input id="age" type="number" min="10" max="100" required></div>
+        <div><label>Weight (kg)</label><input id="weight" type="number" min="20" max="250" required></div>
+        <div><label>Goal</label>
+          <select id="goal">
+            <option>General wellness</option><option>Strength</option>
+            <option>Endurance</option><option>Mobility</option><option>Fitness</option>
+          </select></div>
+        <div><label>Intensity</label>
+          <select id="intensity">
+            <option>Medium</option><option>Low</option><option>High</option>
+          </select></div>
+      </div>
+      <button class="btn" type="submit">Generate 7-Day Plan &rarr;</button>
+      <p class="foot">The app will prioritize safe, sustainable movement and recovery.
+      For users under 18, it avoids weight-loss or restrictive-diet instructions.</p>
+    </form>
+  </div>
+</div>
+
+<div id="result" style="display:none">
+  <div class="card">
+    <h2 id="rName"></h2>
+    <p class="meta" id="rMeta"></p>
+    <span class="badge">&#10024; Plan ready &bull; Powered by FitBuddy Engine</span>
+    <div class="tip" id="rTip"></div>
+    <div class="days" id="rDays"></div>
+    <button class="btn" onclick="showHome()">&larr; Create another plan</button>
+  </div>
+</div>
+
+<footer style="text-align:center;color:#5f6c7b;font-size:12px;padding:24px;">
+FitBuddy is an educational wellness app. AI output is not medical advice.
+</footer>
+
+<script>
+const WORKOUTS = {
+  "General wellness": [
+    "20-min brisk walk + 5-min stretching",
+    "Bodyweight circuit: squats, wall push-ups, glute bridges (2 rounds)",
+    "30-min walk + deep breathing cooldown",
+    "Light yoga flow: cat-cow, child's pose, seated twist (15 min)",
+    "Dance or shadow-boxing cardio (20 min)"
+  ],
+  "Strength": [
+    "Squats 3x12, push-ups 3x8, plank 3x30s",
+    "Lunges 3x10/leg, glute bridges 3x15, wall sit 3x30s",
+    "Chair dips 3x10, superman holds 3x12, bird-dog 3x8/side",
+    "Goblet squat (backpack) 3x12, incline push-ups 3x10",
+    "Dead bug 3x10, calf raises 3x20, side plank 3x20s/side"
+  ],
+  "Endurance": [
+    "30-min brisk walk or jog-walk intervals",
+    "Cycling or stair climbs (25 min)",
+    "Jump rope rounds: 5 x 60s with 60s rest",
+    "Swimming or rowing (25 min)",
+    "Hill walk or inclined treadmill (30 min)"
+  ],
+  "Mobility": [
+    "Full-body dynamic stretch flow (20 min)",
+    "Hip openers: 90/90 switches, pigeon pose, deep squat hold",
+    "Shoulder mobility: band dislocates, wall slides (15 min)",
+    "Spine care: cat-cow, thread-the-needle, thoracic rotations",
+    "Ankle + wrist mobility routine (15 min)"
+  ],
+  "Fitness": [
+    "AMRAP 12 min: squats, push-ups, mountain climbers",
+    "Cardio intervals: 30s fast / 60s easy x 8 rounds",
+    "Full-body circuit: 4 moves, 40s work / 20s rest x 3 rounds",
+    "5K walk-jog + core finisher (plank, dead bug)",
+    "HIIT ladder: burpees, skater hops, squat jumps (scaled to level)"
+  ]
+};
+const RECOVERY = [
+  "Recovery day: 15-min gentle walk + full-body stretching",
+  "Recovery day: foam rolling, breathing drills, early sleep",
+  "Active rest: easy stroll + 10-min guided relaxation"
+];
+const TIPS = {
+  "General wellness": "Drink water through the day and aim for 7-8 hours of sleep. Consistency beats intensity.",
+  "Strength": "Rest 60-90s between sets. Stop any move that causes sharp pain.",
+  "Endurance": "Keep a pace where you can still talk. Add 5% time each week, not more.",
+  "Mobility": "Move slowly and breathe deeply. Never force a stretch into pain.",
+  "Fitness": "Fuel with a light snack 60-90 min before sessions. Scale moves to your level."
+};
+
+function pick(arr, n){ const c=[...arr], out=[]; while(out.length<n && c.length){ out.push(c.splice(Math.floor(Math.random()*c.length),1)[0]); } return out; }
+
+function buildPlan(goal, intensity, age){
+  const wk = WORKOUTS[goal] || WORKOUTS["General wellness"];
+  const mains = pick(wk, 5);
+  const recs = pick(RECOVERY, 2);
+  const factor = intensity === "High" ? 1.4 : intensity === "Low" ? 0.7 : 1;
+  const young = age < 18;
+  const days = [];
+  let wi = 0, ri = 0;
+  for (let d = 1; d <= 7; d++){
+    if (d === 4 || d === 7){
+      days.push({ title:"Recovery & Rest", items:[recs[ri++ % recs.length], "Hydrate well and prioritize sleep", young ? "Growth-friendly fuel: balanced meals, no restriction" : "Light protein-rich meal within 2 hours"] });
+    } else {
+      const extra = intensity === "High" ? " + 10-min finisher (easy pace)" : "";
+      days.push({ title:"Training Day", items:[ "Warm-up: 5 min joint circles + easy march", mains[wi++ % mains.length] + extra + " (" + Math.round(30*factor) + " min)", "Cool-down: 5-min static stretching", young ? "Note (under 18): focus on form and fun, not weight loss" : TIPS[goal] ] });
+    }
+  }
+  return days;
+}
+
+document.getElementById("planForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const name = document.getElementById("name").value.trim() || "Friend";
+  const uid  = document.getElementById("uid").value.trim() || "fit001";
+  const age  = parseInt(document.getElementById("age").value) || 25;
+  const wt   = document.getElementById("weight").value || "-";
+  const goal = document.getElementById("goal").value;
+  const inten= document.getElementById("intensity").value;
+  const days = buildPlan(goal, inten, age);
+
+  document.getElementById("rName").textContent = name + "\u2019s 7-Day Plan";
+  document.getElementById("rMeta").textContent = "User ID: " + uid + " \u2022 Age " + age + " \u2022 " + wt + " kg \u2022 Goal: " + goal + " \u2022 Intensity: " + inten;
+  document.getElementById("rTip").textContent = TIPS[goal];
+  const box = document.getElementById("rDays");
+  box.innerHTML = "";
+  const names = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+  days.forEach((d, i) => {
+    const div = document.createElement("div");
+    div.className = "day";
+    div.style.animationDelay = (i * 0.07) + "s";
+    div.innerHTML = "<h3>Day " + (i+1) + " \u2014 " + names[i] + " \u2022 " + d.title + "</h3><ul>" +
+      d.items.map(x => "<li>" + x + "</li>").join("") + "</ul>";
+    box.appendChild(div);
+  });
+  document.getElementById("home").style.display = "none";
+  document.getElementById("result").style.display = "block";
+  window.scrollTo(0,0);
+});
+
+function showHome(){
+  document.getElementById("result").style.display = "none";
+  document.getElementById("home").style.display = "block";
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
